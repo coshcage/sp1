@@ -328,7 +328,7 @@ int main()
 	{
 		sp1PrintSyntaxTree(pnode, 0);
 		wprintf(L"\n");
-		wprintf(L"\n= %lf\n", ComputeSyntaxTree(pnode));
+		wprintf(L"\n= %.100lf\n", ComputeSyntaxTree(pnode));
 
 		sp1DestroySyntaxTree(pnode);
 	}

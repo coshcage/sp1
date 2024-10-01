@@ -313,7 +313,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 			
 		if ((NULL != pt && (pt->il != -1 || il + 1 == pt->il)) || NULL == pt || prvs != s)
 		{
-			if (L'0' != buf[0] && NULL != pt)
+			if (L'\0' != buf[0] && NULL != pt)
 			{
 				size_t * psiz;
 				TRM trm = { 0 };
@@ -333,7 +333,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 					break;
 				case TT_OPERAND:
 				HandleOperand:
-					trm.re = _wcsdup(buf);
+					trm.re = wcsdup(buf);
 					trm.type = TT_OPERAND;
 					pnode = strCreateNodeD(&trm, sizeof(TRM));
 					stkPushL(pstkOperand, &pnode, sizeof(P_TNODE_BY));
@@ -368,7 +368,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						if (((P_TRM)pnode->pdata)->level >= trm.level)
 							goto HandleOperator;
 					}
-					trm.re = _wcsdup(buf);
+					trm.re = wcsdup(buf);
 					pnode = strCreateNodeD(&trm, sizeof(TRM));
 					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
 					break;
