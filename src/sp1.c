@@ -360,7 +360,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						stkPeepL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 						if (((P_TRM)pnode->pdata)->level >= trm.level)
 						{
-							if ((trm.adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->level == trm.level))
+							if ((trm.adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->level == trm.level))
 								goto PushOperator;
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
@@ -375,7 +375,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						stkPeepL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 						if (((P_TRM)pnode->pdata)->level >= trm.level)
 						{
-							if ((trm.adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->level == trm.level))
+							if ((trm.adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->level == trm.level))
 								goto PushOperator;
 							goto HandleOperator;
 						}
