@@ -222,7 +222,7 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 			switch (pt->re[0])
 			{
 			case L'+':
-				if (AT_PREFIX != pt->adtp)
+				if ((AT_PREFIX & pt->adtp) == 0)
 				{
 					stkPopL(&d1, sizeof(double), pstk);
 					stkPopL(&d2, sizeof(double), pstk);
@@ -231,7 +231,7 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 				}
 				break;
 			case L'-':
-				if (AT_PREFIX != pt->adtp)
+				if ((AT_PREFIX & pt->adtp) == 0)
 				{
 					stkPopL(&d1, sizeof(double), pstk);
 					stkPopL(&d2, sizeof(double), pstk);

@@ -355,14 +355,13 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						trm.y = *pcol;
 					}
 				HandleOperator:
-					if (trm.adtp & AT_ASSOCIATIVITY_RTL)
-						goto PushOperator;
-					
 					if (!stkIsEmptyL(pstkOperator))
 					{
 						stkPeepL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 						if (((P_TRM)pnode->pdata)->level >= trm.level)
 						{
+							if ((trm.adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->level == trm.level))
+								goto PushOperator;
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
 								if (NULL != err)
@@ -375,7 +374,11 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 					{
 						stkPeepL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 						if (((P_TRM)pnode->pdata)->level >= trm.level)
+						{
+							if ((trm.adtp & AT_ASSOCIATIVITY_RTL) && (((P_TRM)pnode->pdata)->level == trm.level))
+								goto PushOperator;
 							goto HandleOperator;
+						}
 					}
 				PushOperator:
 					trm.re = wcsdup(buf);
