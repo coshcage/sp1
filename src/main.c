@@ -27,7 +27,7 @@ TRM trm[] =
 	{
 		L"",
 		TT_OPERATOR,
-		AT_PREFIX,
+		AT_PREFIX | AT_ASSOCIATIVITY_RTL,
 		1,
 		3,
 		1,
@@ -49,7 +49,7 @@ TRM trm[] =
 	{
 		L"",
 		TT_OPERATOR,
-		AT_PREFIX,
+		AT_PREFIX | AT_ASSOCIATIVITY_RTL,
 		1,
 		3,
 		1,
@@ -187,6 +187,9 @@ void pperror(size_t id, size_t ln, size_t col)
 		break;
 	case 0x5:
 		wprintf(L"Undefined identifier! At line: %zd, column: %zd.\n", ln, col);
+		break;
+	case 0x6:
+		wprintf(L"Not a prefix operator! At line: %zd, column: %zd.\n", ln, col);
 		break;
 	}
 }
@@ -328,7 +331,7 @@ int main()
 	{
 		sp1PrintSyntaxTree(pnode, 0);
 		wprintf(L"\n");
-		wprintf(L"\n= %.100lf\n", ComputeSyntaxTree(pnode));
+		wprintf(L"\n= %lf\n", ComputeSyntaxTree(pnode));
 
 		sp1DestroySyntaxTree(pnode);
 	}

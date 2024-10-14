@@ -344,11 +344,20 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						++pt;
 						if (!(pt - (P_TRM)parrlex->pdata < (ptrdiff_t)strLevelArrayZ(parrlex) && L'\0' == *pt->re)) /* Ensure that pt is in range. */
 							--pt;
+						if (!(pt->adtp & AT_PREFIX))
+						{
+							if (NULL != err)
+								err(0x6, *pln, *pcol);
+							goto Lbl_Error;
+						}
 						trm = *pt;
 						trm.x = *pln;
 						trm.y = *pcol;
 					}
 				HandleOperator:
+					if (trm.adtp & AT_ASSOCIATIVITY_RTL)
+						goto PushOperator;
+					
 					if (!stkIsEmptyL(pstkOperator))
 					{
 						stkPeepL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
@@ -368,6 +377,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						if (((P_TRM)pnode->pdata)->level >= trm.level)
 							goto HandleOperator;
 					}
+				PushOperator:
 					trm.re = wcsdup(buf);
 					pnode = strCreateNodeD(&trm, sizeof(TRM));
 					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));

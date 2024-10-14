@@ -27,12 +27,13 @@ typedef enum st_TRMTYPE
 
 typedef enum st_ADDTYPE
 {
-	AT_NONE,       /* No type. */
-	AT_MIDDLE,     /* Infix. */
-	AT_PREFIX,     /* Prefix. */
-	AT_SUFFIX,     /* Suffix. */
-	AT_NUMBER,     /* Numbers. */
-	AT_IDENTIFIER  /* Identifiers. */
+	AT_NONE = 0,       /* No type. */
+	// AT_MIDDLE,     /* Infix. */
+	AT_PREFIX = 1,     /* Prefix. */
+	// AT_SUFFIX,     /* Suffix. */
+	AT_NUMBER = 2,     /* Numbers. */
+	AT_IDENTIFIER = 4,  /* Identifiers. */
+	AT_ASSOCIATIVITY_RTL = 8
 } ADDTYPE;
 
 /* Error printing function prototype. */
