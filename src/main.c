@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1 calculator.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234C0926241234L00341
+ * File ID:     0926241234C1017241348L00355
  * License:     GPLv3.
  */
 #include <stdio.h>
@@ -10,6 +10,9 @@
 #include <math.h>
 #include "sp1.h"
 #include "svstack.h"
+
+const double _e = 2.718281828;
+const double _pi = 3.141592654;
 
 TRM trm[] =
 {
@@ -169,8 +172,9 @@ TRM trm[] =
 	},
 };
 
-void pperror(size_t id, size_t ln, size_t col)
+void pperror(size_t id, size_t ln, size_t col, size_t len)
 {
+	col -= 1 + len;
 	switch (id)
 	{
 	case 0x1:
@@ -210,10 +214,18 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 	case TT_OPERAND:
 		if (AT_IDENTIFIER == pt->adtp)
 		{
-			pperror(0x5, pt->x, pt->y);
-			return CBF_TERMINATE;
+			if (!wcscmp(L"e", pt->re))
+				d = _e;
+			else if (!wcscmp(L"pi", pt->re))
+				d = _pi;
+			else
+			{
+				pperror(0x5, pt->x, pt->y, wcslen(pt->re));
+				return CBF_TERMINATE;
+			}
 		}
-		d = wcstod(pt->re, p);
+		else
+			d = wcstod(pt->re, p);
 		stkPushL(pstk, &d, sizeof(double));
 		break;
 	case TT_OPERATOR:
@@ -281,9 +293,8 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 		}
 		break;
 	case TT_IDENTIFIER:
-		pperror(0x5, pt->x, pt->y);
+		pperror(0x5, pt->x, pt->y, wcslen(pt->re));
 		return CBF_TERMINATE;
-		break;
 	}
 	return CBF_CONTINUE;
 }
@@ -313,20 +324,23 @@ int main()
 	size_t x = 1, y = 1;
 	wchar_t buff[BUFSIZ] = { 0 };
 	P_TNODE_BY pnode;
-	P_TRIE_A pt;
+	P_TRIE_A ptafn, ptaid;
 	ARRAY_Z parr;
 	P_QUEUE_L pq;
 	parr.num = 14;
 	parr.pdata = (PUCHAR)trm;
 
-	pt = treCreateTrieA();
+	ptafn = treCreateTrieA();
+	ptaid = treCreateTrieA();
 	pq = sp1LexCompile(&parr);
 
-	sp1RegisterFunction(pt, L"sin", 1);
+	sp1RegisterID(ptafn, L"sin", 1);
+	sp1RegisterID(ptaid, L"pi", 0);
+	sp1RegisterID(ptaid, L"e", 0);
 	
 	wscanf(L"%ls", buff);
 	
-	pnode = sp1ParseExpression(pq, &parr, pt, buff, pperror, &x, &y);
+	pnode = sp1ParseExpression(pq, &parr, ptafn, ptaid, buff, pperror, &x, &y);
 	if (NULL != pnode)
 	{
 		sp1PrintSyntaxTree(pnode, 0);
@@ -337,7 +351,8 @@ int main()
 	}
 
 	sp1LexDestroy(pq);
-	treDeleteTrieA(pt, sizeof(wchar_t));
-
+	treDeleteTrieA(ptafn, sizeof(wchar_t));
+	treDeleteTrieA(ptaid, sizeof(wchar_t));
+	
 	return 0;
 }

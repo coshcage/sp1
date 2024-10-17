@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B0926241234L00589
+ * File ID:     0926241234B1017241348L00616
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -268,7 +268,7 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
  *      pcol Pointer to column number.
  * Return value:  Syntax tree node.
  */
-P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, wchar_t * wcstr, CBF_ERROR err, size_t * pln, size_t * pcol)
+P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P_TRIE_A ptaid, wchar_t * wcstr, CBF_ERROR err, size_t * pln, size_t * pcol)
 {
 	P_TRM pt;
 	ptrdiff_t il = 0;
@@ -347,7 +347,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 						if (!(pt->adtp & AT_PREFIX))
 						{
 							if (NULL != err)
-								err(0x6, *pln, *pcol);
+								err(0x6, *pln, *pcol, wcslen(buf));
 							goto Lbl_Error;
 						}
 						trm = *pt;
@@ -365,7 +365,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
 								if (NULL != err)
-									err(0x1, *pln, *pcol);
+									err(0x1, *pln, *pcol, 0);
 								goto Lbl_Error;
 							}
 						}
@@ -389,7 +389,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 					if (TT_RPAR == prvtp)
 					{
 						if (NULL != err)
-							err(0x2, *pln, *pcol);
+							err(0x2, *pln, *pcol, 0);
 						goto Lbl_Error;
 					}
 					trm.re = NULL;
@@ -400,7 +400,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 					if (TT_LPAR == prvtp)
 					{
 						if (NULL != err)
-							err(0x1, *pln, *pcol);
+							err(0x1, *pln, *pcol, wcslen(buf));
 						goto Lbl_Error;
 					}
 				HandleRPar:
@@ -412,7 +412,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
 								if (NULL != err)
-									err(0x1, *pln, *pcol);
+									err(0x1, *pln, *pcol, wcslen(buf));
 								goto Lbl_Error;
 							}
 						}
@@ -428,32 +428,46 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 					if (stkIsEmptyL(pstkOperator))
 					{
 						if (NULL != err)
-							err(0x4, *pln, *pcol);
+							err(0x4, *pln, *pcol, 0);
 						goto Lbl_Error;
 					}
 					stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 					break;
 				case TT_IDENTIFIER:
-					psiz = treSearchTrieA(ptafn, buf, wcslen(buf) - 1, sizeof(wchar_t), cbfcmpWChar_T);
-					if (NULL != psiz) /* This is a function. */
+					psiz = NULL;
+					if (NULL != ptafn)
 					{
-						trm.pc = *psiz;
-						trm.level = SP1C_FN_LEVEL;
-						trm.type = TT_OPERATOR;
-						if (0 != trm.type)
-							prvtp = trm.type;
-						goto HandleOperator;
+						psiz = treSearchTrieA(ptafn, buf, wcslen(buf), sizeof(wchar_t), cbfcmpWChar_T);
+						if (NULL != psiz) /* This is a function. */
+						{
+							trm.pc = *psiz;
+							trm.level = SP1C_FN_LEVEL;
+							trm.type = TT_OPERATOR;
+							if (0 != trm.type)
+								prvtp = trm.type;
+							goto HandleOperator;
+						}
+						else
+						{
+							goto SearchID;
+						}
 					}
-					else
+				SearchID:
+					if (NULL != ptaid)
 					{
+						psiz = treSearchTrieA(ptaid, buf, wcslen(buf), sizeof(wchar_t), cbfcmpWChar_T);
+						if (NULL == psiz)
+						{
+							if (NULL != err)
+								err(0x5, *pln, *pcol, wcslen(buf));
+							goto Lbl_Error;
+						}
 						if (0 != trm.type)
 							prvtp = trm.type;
 						goto HandleOperand;
 					}
-					psiz = NULL;
-					break;
 				}
-					
+
 				if (0 != trm.type)
 					prvtp = trm.type;
 			}
@@ -467,7 +481,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, w
 			if (pbuf - buf >= BUFSIZ)
 			{
 				if (NULL != err)
-					err(0x3, *pln, *pcol);
+					err(0x3, *pln, *pcol, wcslen(buf));
 				goto Lbl_Error;
 			}
 		}
@@ -489,7 +503,7 @@ Lbl_Finish:
 		case TT_LPAR:
 		case TT_RPAR:
 			if (NULL != err)
-				err(0x4, *pln, *pcol);
+				err(0x4, *pln, *pcol, 0);
 			goto Lbl_Error;
 		}
 		if (!Pop1Operator(pstkOperand, pstkOperator))
@@ -497,7 +511,7 @@ Lbl_Finish:
 			if (NULL != err)
 			{
 				P_TRM pt = (P_TRM)pnode->pdata;
-				err(0x1, pt->x, pt->y);
+				err(0x1, pt->x, pt->y, wcslen(pt->re));
 			
 			}
 			goto Lbl_Error;
@@ -509,7 +523,7 @@ Lbl_Finish:
 	if (!stkIsEmptyL(pstkOperand) || !stkIsEmptyL(pstkOperator))
 	{
 		if (NULL != err)
-			err(0x1, *pln, *pcol);
+			err(0x1, *pln, *pcol, 0);
 	}
 Lbl_Error:
 	do
@@ -583,9 +597,9 @@ void sp1PrintSyntaxTree(P_TNODE_BY pnode, size_t space)
  *        pc Parameter counter.
  * Return value:  TRUE or FALSE.
  */
-BOOL sp1RegisterFunction(P_TRIE_A ptafn, wchar_t * name, size_t pc)
+BOOL sp1RegisterID(P_TRIE_A ptafn, wchar_t * name, size_t a)
 {
-	return treInsertTrieA(ptafn, name, wcslen(name) - 1, sizeof(wchar_t), pc, cbfcmpWChar_T);
+	return treInsertTrieA(ptafn, name, wcslen(name), sizeof(wchar_t), a, cbfcmpWChar_T);
 }
 
 /* Function name: sp1UnregisterFunction
@@ -595,8 +609,7 @@ BOOL sp1RegisterFunction(P_TRIE_A ptafn, wchar_t * name, size_t pc)
  *      name Name wide string.
  * Return value:  TRUE or FALSE.
  */
-BOOL sp1UnregisterFunction(P_TRIE_A ptafn, wchar_t * name)
+BOOL sp1UnregisterID(P_TRIE_A ptafn, wchar_t * name)
 {
-	return treRemoveTrieA(ptafn, name, wcslen(name) - 1, sizeof(wchar_t), cbfcmpWChar_T);
+	return treRemoveTrieA(ptafn, name, wcslen(name), sizeof(wchar_t), cbfcmpWChar_T);
 }
-

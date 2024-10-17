@@ -2,7 +2,7 @@
  * Name:        sp1.h
  * Description: Stack parser 1 header.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234A0926241234L00074
+ * File ID:     0926241234A1017241348L00084
  * License:     GPLv3.
  */
 #ifndef _SP1_H_
@@ -37,7 +37,7 @@ typedef enum st_ADDTYPE
 } ADDTYPE;
 
 /* Error printing function prototype. */
-typedef void (*CBF_ERROR)(size_t id, size_t ln, size_t col);
+typedef void (*CBF_ERROR)(size_t id, size_t ln, size_t col, size_t len);
 
 typedef struct st_TRM
 {
@@ -66,9 +66,18 @@ typedef struct st_DFASEQ
 P_QUEUE_L  sp1LexCompile(P_ARRAY_Z parrlex);
 void       sp1LexDestroy(P_QUEUE_L pq);
 void       sp1DestroySyntaxTree(P_TNODE_BY pnode);
-P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, wchar_t * wcstr, CBF_ERROR err, size_t * pln, size_t * pcol);
+P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P_TRIE_A ptaid, wchar_t * wcstr, CBF_ERROR err, size_t * pln, size_t * pcol);
 void       sp1PrintSyntaxTree(P_TNODE_BY pnode, size_t space);
-BOOL       sp1RegisterFunction(P_TRIE_A ptafn, wchar_t * name, size_t pc);
-BOOL       sp1UnregisterFunction(P_TRIE_A ptafn, wchar_t * name);
+BOOL       sp1RegisterID(P_TRIE_A pta, wchar_t * name, size_t a);
+BOOL       sp1UnregisterID(P_TRIE_A pta, wchar_t * name);
 
 #endif
+
+/* Parser error ID reference:
+ * 0x1: Miss operand.		
+ * 0x2: Miss operator.		
+ * 0x3: Identifier is too long.
+ * 0x4: Miss parenthesis.		
+ * 0x5: Undefined identifier.		
+ * 0x6: Not a prefix operator.
+ */
