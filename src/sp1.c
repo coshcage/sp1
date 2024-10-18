@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1017241348L00616
+ * File ID:     0926241234B1017241348L00619
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -262,8 +262,11 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
  *        pq Lex queue.
  *   parrlex An array of TRMs.
  *     ptafn Pointer to a trie of function names.
+ *           This value can be NULL.
+ *     ptaid Pointer to a trie of identifiers.
+ *           This value can be NULL.
  *     wcstr The expression string.
- *       err Pointer to a function that handles errors.
+ *       err Pointer to a function that reports errors.
  *       pln Pointer to line number.
  *      pcol Pointer to column number.
  * Return value:  Syntax tree node.
@@ -589,27 +592,27 @@ void sp1PrintSyntaxTree(P_TNODE_BY pnode, size_t space)
 	sp1PrintSyntaxTree(pnode->ppnode[LEFT], space);
 }
 
-/* Function name: sp1RegisterFunction
- * Description:   Register function name.
+/* Function name: sp1RegisterID
+ * Description:   Register identifier.
  * Parameter:
- *     ptafn Pointer to a trie.
+ *       pta Pointer to a trie.
  *      name Name wide string.
- *        pc Parameter counter.
+ *         a Parameter counter.
  * Return value:  TRUE or FALSE.
  */
-BOOL sp1RegisterID(P_TRIE_A ptafn, wchar_t * name, size_t a)
+BOOL sp1RegisterID(P_TRIE_A pta, wchar_t * name, size_t a)
 {
-	return treInsertTrieA(ptafn, name, wcslen(name), sizeof(wchar_t), a, cbfcmpWChar_T);
+	return treInsertTrieA(pta, name, wcslen(name), sizeof(wchar_t), a, cbfcmpWChar_T);
 }
 
-/* Function name: sp1UnregisterFunction
- * Description:   Unregister function name.
+/* Function name: sp1UnregisterID
+ * Description:   Unregister identifier.
  * Parameter:
- *     ptafn Pointer to a trie.
+ *       pta Pointer to a trie.
  *      name Name wide string.
  * Return value:  TRUE or FALSE.
  */
-BOOL sp1UnregisterID(P_TRIE_A ptafn, wchar_t * name)
+BOOL sp1UnregisterID(P_TRIE_A pta, wchar_t * name)
 {
-	return treRemoveTrieA(ptafn, name, wcslen(name), sizeof(wchar_t), cbfcmpWChar_T);
+	return treRemoveTrieA(pta, name, wcslen(name), sizeof(wchar_t), cbfcmpWChar_T);
 }
