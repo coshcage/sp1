@@ -2,11 +2,13 @@
  * Name:        sp1.c
  * Description: Stack parser 1 calculator.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234C1017241348L00355
+ * File ID:     0926241234C1025241546L00364
  * License:     GPLv3.
  */
 #include <stdio.h>
 #include <wchar.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "sp1.h"
 #include "svstack.h"
@@ -247,7 +249,7 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 				{
 					stkPopL(&d1, sizeof(double), pstk);
 					stkPopL(&d2, sizeof(double), pstk);
-					d = d1 - d2;
+					d = d2 - d1;
 
 				}
 				else
@@ -322,7 +324,8 @@ double ComputeSyntaxTree(P_TNODE_BY pnode)
 int main()
 {
 	size_t x = 1, y = 1;
-	wchar_t buff[BUFSIZ] = { 0 };
+	wchar_t buff[BUFSIZ] = { 0 }, * pbuff = buff;
+	char mbb[BUFSIZ] = { 0 };
 	P_TNODE_BY pnode;
 	P_TRIE_A ptafn, ptaid;
 	ARRAY_Z parr;
@@ -334,13 +337,15 @@ int main()
 	ptaid = treCreateTrieA();
 	pq = sp1LexCompile(&parr);
 
-	sp1RegisterID(ptafn, L"sin", 1);
+	sp1RegisterID(ptafn, L"sin", 2);
 	sp1RegisterID(ptaid, L"pi", 0);
 	sp1RegisterID(ptaid, L"e", 0);
 	
-	wscanf(L"%ls", buff);
+	//wscanf(L"%ls", buff);
+	fgets(mbb, BUFSIZ - 1, stdin);
+	mbstowcs(buff, mbb, strlen(mbb));
 	
-	pnode = sp1ParseExpression(pq, &parr, ptafn, ptaid, buff, pperror, &x, &y);
+	pnode = sp1ParseExpression(pq, &parr, ptafn, ptaid, &pbuff, pperror, &x, &y);
 	if (NULL != pnode)
 	{
 		sp1PrintSyntaxTree(pnode, 0);

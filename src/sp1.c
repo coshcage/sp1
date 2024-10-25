@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1017241348L00619
+ * File ID:     0926241234B1025241546L00642
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -20,6 +20,7 @@ static int    cbfcmpWChar_T(const void * px, const void * py);
 static int    cbftvsClearSyntaxTreeNode(void * pitem, size_t param);
 static int    cbftvsClearStack(void * pitem, size_t param);
 static BOOL   Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
+static int    cbftvsResetLexer(void * pitem, size_t param);
 static void   PrintTRM(P_TRM pt);
 
 /* Function name: sp1LexCompile
@@ -256,6 +257,24 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
 	return FALSE;
 }
 
+/* Attention:	  This Is An Internal Function. No Interface for Library Users.
+ * Function name: cbftvsResetLexer
+ * Description:   Callback for reset lexer.
+ * Parameters:
+ *      pitem Pointer to each node of a queue.
+ *      param N/A.
+ * Return value:  CBF_CONTINUE only.
+ */
+static int cbftvsResetLexer(void * pitem, size_t param)
+{
+	P_DFASEQ pdfaq = (P_DFASEQ)((P_NODE_S)pitem)->pdata;
+	
+	DWC4100(param);
+	pdfaq->curstate = 0;
+	
+	return CBF_CONTINUE;
+}
+
 /* Function name: sp1ParseExpression
  * Description:   Parser.
  * Parameter:
@@ -265,20 +284,20 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
  *           This value can be NULL.
  *     ptaid Pointer to a trie of identifiers.
  *           This value can be NULL.
- *     wcstr The expression string.
+ *    pwcstr Pointer to the expression string.
  *       err Pointer to a function that reports errors.
  *       pln Pointer to line number.
  *      pcol Pointer to column number.
  * Return value:  Syntax tree node.
  */
-P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P_TRIE_A ptaid, wchar_t * wcstr, CBF_ERROR err, size_t * pln, size_t * pcol)
+P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P_TRIE_A ptaid, wchar_t ** pwcstr, CBF_ERROR err, size_t * pln, size_t * pcol)
 {
 	P_TRM pt;
 	ptrdiff_t il = 0;
 	size_t s, prvs = 0, prvtp = TT_NONE;
 	P_TNODE_BY pnode = NULL;
 	P_STACK_L pstkOperator = NULL, pstkOperand = NULL;
-	wchar_t buf[BUFSIZ] = {0}, * pbuf = buf, prvc = *wcstr;
+	wchar_t buf[BUFSIZ] = {0}, * pbuf = buf, prvc = **pwcstr;
 
 	pstkOperator = stkCreateL();
 	pstkOperand = stkCreateL();
@@ -294,8 +313,8 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 
 	while (L'\0' != prvc)
 	{
-		s = Lexer(pq, *wcstr);
-		switch (*wcstr)
+		s = Lexer(pq, **pwcstr);
+		switch (**pwcstr)
 		{
 		case L'\r':
 		case L'\n':
@@ -489,13 +508,13 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 			}
 		}
 
-		*pbuf = *wcstr;
+		*pbuf = **pwcstr;
 		++pbuf;
 		*pbuf = L'\0';
 		
 		prvs = s;
-		prvc = *wcstr;
-		++wcstr;
+		prvc = **pwcstr;
+		++*pwcstr;
 	}
 Lbl_Finish:
 	while (!stkIsEmptyL(pstkOperator))
@@ -550,6 +569,10 @@ Lbl_Error:
 	strTraverseLinkedListSC_X(*pstkOperand, NULL, cbftvsClearStack, 0);
 	stkDeleteL(pstkOperator);
 	stkDeleteL(pstkOperand);
+	
+	/* Reset the lexer. */
+	strTraverseLinkedListSC_N(pq->pfront, NULL, cbftvsResetLexer, 0);
+	
 	return pnode;
 }
 
