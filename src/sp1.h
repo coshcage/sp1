@@ -2,7 +2,7 @@
  * Name:        sp1.h
  * Description: Stack parser 1 header.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234A1017241348L00084
+ * File ID:     0926241234A1017241348L00085
  * License:     GPLv3.
  */
 #ifndef _SP1_H_
@@ -64,6 +64,7 @@ typedef struct st_DFASEQ
 
 /* Function declaration. */
 P_QUEUE_L  sp1LexCompile(P_ARRAY_Z parrlex);
+size_t     sp1Lexer(P_QUEUE_L pq, wchar_t wc);
 void       sp1LexDestroy(P_QUEUE_L pq);
 void       sp1DestroySyntaxTree(P_TNODE_BY pnode);
 P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P_TRIE_A ptaid, wchar_t ** pwcstr, CBF_ERROR err, size_t * pln, size_t * pcol);

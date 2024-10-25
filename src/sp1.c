@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1025241546L00642
+ * File ID:     0926241234B1025241546L00640
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -14,7 +14,6 @@
 
 /* File level function declarations. */
 static int    cbftvsLexerPuppet(void * pitem, size_t param);
-static size_t Lexer(P_QUEUE_L pq, wchar_t wc);
 static int    cbftvsLexerDestroyPuppet(void * pitem, size_t param);
 static int    cbfcmpWChar_T(const void * px, const void * py);
 static int    cbftvsClearSyntaxTreeNode(void * pitem, size_t param);
@@ -86,15 +85,14 @@ static int cbftvsLexerPuppet(void * pitem, size_t param)
 	return CBF_CONTINUE;
 }
 
-/* Attention:	  This Is An Internal Function. No Interface for Library Users.
- * Function name: Lexer
+/* Function name: sp1Lexer
  * Description:   Lexical analyzer.
  * Parameters:
  *         pq Pointer to a queue of DFAs.
  *         wc Inputted wide character.
- * Return value:  Line number of regular expression in L file.
+ * Return value:  Index + 1 of TRM array.
  */
-static size_t Lexer(P_QUEUE_L pq, wchar_t wc)
+size_t sp1Lexer(P_QUEUE_L pq, wchar_t wc)
 {
 	size_t a[2];
 
@@ -313,7 +311,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 
 	while (L'\0' != prvc)
 	{
-		s = Lexer(pq, **pwcstr);
+		s = sp1Lexer(pq, **pwcstr);
 		switch (**pwcstr)
 		{
 		case L'\r':
