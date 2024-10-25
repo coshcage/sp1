@@ -337,7 +337,7 @@ int main()
 	ptaid = treCreateTrieA();
 	pq = sp1LexCompile(&parr);
 
-	sp1RegisterID(ptafn, L"sin", 2);
+	sp1RegisterID(ptafn, L"sin", 1);
 	sp1RegisterID(ptaid, L"pi", 0);
 	sp1RegisterID(ptaid, L"e", 0);
 	
