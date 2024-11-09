@@ -13,14 +13,14 @@
 #include "svstack.h"
 
 /* File level function declarations. */
-static int    cbftvsLexerPuppet(void * pitem, size_t param);
-static int    cbftvsLexerDestroyPuppet(void * pitem, size_t param);
-static int    cbfcmpWChar_T(const void * px, const void * py);
-static int    cbftvsClearSyntaxTreeNode(void * pitem, size_t param);
-static int    cbftvsClearStack(void * pitem, size_t param);
-static BOOL   Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
-static int    cbftvsResetLexer(void * pitem, size_t param);
-static void   PrintTRM(P_TRM pt);
+static int  cbftvsLexerPuppet(void * pitem, size_t param);
+static int  cbftvsLexerDestroyPuppet(void * pitem, size_t param);
+static int  cbfcmpWChar_T(const void * px, const void * py);
+static int  cbftvsClearSyntaxTreeNode(void * pitem, size_t param);
+static int  cbftvsClearStack(void * pitem, size_t param);
+static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
+static int  cbftvsResetLexer(void * pitem, size_t param);
+static void PrintTRM(P_TRM pt);
 
 /* Function name: sp1LexCompile
  * Description:   Compile an array of TRMs to lex queue.
