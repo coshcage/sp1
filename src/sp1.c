@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1025241546L00640
+ * File ID:     0926241234B1114240753L00646
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -454,6 +454,12 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 					break;
 				case TT_IDENTIFIER:
+					if (TT_OPERAND == prvtp)
+					{
+						if (NULL != err)
+							err(0x2, *pln, *pcol, 0);
+						goto Lbl_Error;
+					}
 					psiz = NULL;
 					if (NULL != ptafn)
 					{
@@ -637,3 +643,4 @@ BOOL sp1UnregisterID(P_TRIE_A pta, wchar_t * name)
 {
 	return treRemoveTrieA(pta, name, wcslen(name), sizeof(wchar_t), cbfcmpWChar_T);
 }
+
