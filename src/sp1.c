@@ -454,7 +454,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 					break;
 				case TT_IDENTIFIER:
-					if (TT_OPERAND == prvtp && !(AT_MIDDLE & trm.adtp) && !(AT_SUFFIX & trm.adtp))
+					if (TT_OPERAND == prvtp)
 					{
 						if (NULL != err)
 							err(0x2, *pln, *pcol, 0);
