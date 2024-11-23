@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1114240753L00646
+ * File ID:     0926241234B1123240745L00662
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -295,8 +295,18 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 	size_t s, prvs = 0, prvtp = TT_NONE;
 	P_TNODE_BY pnode = NULL;
 	P_STACK_L pstkOperator = NULL, pstkOperand = NULL;
-	wchar_t buf[BUFSIZ] = {0}, * pbuf = buf, prvc = **pwcstr;
-
+	ARRAY_Z arrbuf;
+	wchar_t * pbuf, prvc = **pwcstr;
+	
+	if (NULL == strInitArrayZ(&arrbuf, BUFSIZ, sizeof(wchar_t)))
+	{
+		if (NULL != err)
+			err(0x3, *pln, *pcol, 0);
+		return NULL;
+	}
+	
+	pbuf = (wchar_t *)arrbuf.pdata;
+		
 	pstkOperator = stkCreateL();
 	pstkOperand = stkCreateL();
 
@@ -333,7 +343,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 			
 		if ((NULL != pt && (pt->il != -1 || il + 1 == pt->il)) || NULL == pt || prvs != s)
 		{
-			if (L'\0' != buf[0] && NULL != pt)
+			if (L'\0' != *(wchar_t *)strLocateItemArrayZ(&arrbuf, sizeof(wchar_t), 0) && NULL != pt)
 			{
 				size_t * psiz;
 				TRM trm = { 0 };
@@ -353,7 +363,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					break;
 				case TT_OPERAND:
 				HandleOperand:
-					trm.re = wcsdup(buf);
+					trm.re = wcsdup((wchar_t *)arrbuf.pdata);
 					trm.type = TT_OPERAND;
 					pnode = strCreateNodeD(&trm, sizeof(TRM));
 					stkPushL(pstkOperand, &pnode, sizeof(P_TNODE_BY));
@@ -367,7 +377,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 						if (!(pt->adtp & AT_PREFIX))
 						{
 							if (NULL != err)
-								err(0x6, *pln, *pcol, wcslen(buf));
+								err(0x6, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
 							goto Lbl_Error;
 						}
 						trm = *pt;
@@ -401,7 +411,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 						}
 					}
 				PushOperator:
-					trm.re = wcsdup(buf);
+					trm.re = wcsdup((wchar_t *)arrbuf.pdata);
 					pnode = strCreateNodeD(&trm, sizeof(TRM));
 					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
 					break;
@@ -420,7 +430,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					if (TT_LPAR == prvtp)
 					{
 						if (NULL != err)
-							err(0x1, *pln, *pcol, wcslen(buf));
+							err(0x1, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
 						goto Lbl_Error;
 					}
 				HandleRPar:
@@ -432,7 +442,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
 								if (NULL != err)
-									err(0x1, *pln, *pcol, wcslen(buf));
+									err(0x1, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
 								goto Lbl_Error;
 							}
 						}
@@ -463,7 +473,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					psiz = NULL;
 					if (NULL != ptafn)
 					{
-						psiz = treSearchTrieA(ptafn, buf, wcslen(buf), sizeof(wchar_t), cbfcmpWChar_T);
+						psiz = treSearchTrieA(ptafn, (wchar_t *)arrbuf.pdata, wcslen((wchar_t *)arrbuf.pdata), sizeof(wchar_t), cbfcmpWChar_T);
 						if (NULL != psiz) /* This is a function. */
 						{
 							trm.pc = *psiz;
@@ -481,11 +491,11 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 				SearchID:
 					if (NULL != ptaid)
 					{
-						psiz = treSearchTrieA(ptaid, buf, wcslen(buf), sizeof(wchar_t), cbfcmpWChar_T);
+						psiz = treSearchTrieA(ptaid, (wchar_t *)arrbuf.pdata, wcslen((wchar_t *)arrbuf.pdata), sizeof(wchar_t), cbfcmpWChar_T);
 						if (NULL == psiz)
 						{
 							if (NULL != err)
-								err(0x5, *pln, *pcol, wcslen(buf));
+								err(0x5, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
 							goto Lbl_Error;
 						}
 						if (0 != trm.type)
@@ -498,17 +508,21 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					prvtp = trm.type;
 			}
 
-			pbuf = buf;
+			pbuf = (wchar_t *)arrbuf.pdata;
 			il = 0;
 		}
 		else
 		{
 			++il;
-			if (pbuf - buf >= BUFSIZ)
+			if (pbuf - (wchar_t *)arrbuf.pdata >= strLevelArrayZ(&arrbuf))
 			{
-				if (NULL != err)
-					err(0x3, *pln, *pcol, wcslen(buf));
-				goto Lbl_Error;
+				if (NULL == strResizeArrayZ(&arrbuf, strLevelArrayZ(&arrbuf) + BUFSIZ, sizeof(wchar_t)))
+				{
+					if (NULL != err)
+						err(0x3, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
+					goto Lbl_Error;
+				}
+				pbuf = (wchar_t *)arrbuf.pdata + strLevelArrayZ(&arrbuf) - BUFSIZ;
 			}
 		}
 
@@ -573,6 +587,8 @@ Lbl_Error:
 	strTraverseLinkedListSC_X(*pstkOperand, NULL, cbftvsClearStack, 0);
 	stkDeleteL(pstkOperator);
 	stkDeleteL(pstkOperand);
+	
+	strFreeArrayZ(&arrbuf);
 	
 	/* Reset the lexer. */
 	strTraverseLinkedListSC_N(pq->pfront, NULL, cbftvsResetLexer, 0);
