@@ -77,8 +77,9 @@ BOOL       sp1UnregisterID(P_TRIE_A pta, wchar_t * name);
 /* Parser error ID reference:
  * 0x1: Miss operand.		
  * 0x2: Miss operator.		
- * 0x3: Identifier is too long.
+ * 0x3: Allocation error.
  * 0x4: Miss parenthesis.		
  * 0x5: Undefined identifier.		
  * 0x6: Not a prefix operator.
  */
+

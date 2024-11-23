@@ -186,7 +186,7 @@ void pperror(size_t id, size_t ln, size_t col, size_t len)
 		wprintf(L"Miss operator! At line: %zd, column: %zd.\n", ln, col);
 		break;
 	case 0x3:
-		wprintf(L"Identifier is too long! At line: %zd, column: %zd.\n", ln, col);
+		wprintf(L"Allocation error! At line: %zd, column: %zd.\n", ln, col);
 		break;
 	case 0x4:
 		wprintf(L"Miss parenthesis! At line: %zd, column: %zd.\n", ln, col);
