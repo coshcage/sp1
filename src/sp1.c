@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1123240745L00662
+ * File ID:     0926241234B1128241311L00684
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -21,6 +21,7 @@ static int  cbftvsClearStack(void * pitem, size_t param);
 static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
 static int  cbftvsResetLexer(void * pitem, size_t param);
 static void PrintTRM(P_TRM pt);
+int         _grpCBFCompareInteger(const void * px, const void * py);
 
 /* Function name: sp1LexCompile
  * Description:   Compile an array of TRMs to lex queue.
@@ -213,43 +214,48 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
 		
 		stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
 		n = ((P_TRM)pnode->pdata)->pc;
-		par = strCreateArrayZ(n, sizeof(P_TNODE_BY));
-		for (m = 0; m < n; ++m)
+		if (n)
 		{
-			*(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), m) = NULL;
-			if (!stkIsEmptyL(pstkOperand))
+			par = strCreateArrayZ(n, sizeof(P_TNODE_BY));
+			for (m = 0; m < n; ++m)
 			{
-				stkPopL(&pnodet, sizeof(P_TNODE_BY), pstkOperand);
-				*(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), m) = pnodet;
+				*(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), m) = NULL;
+				if (!stkIsEmptyL(pstkOperand))
+				{
+					stkPopL(&pnodet, sizeof(P_TNODE_BY), pstkOperand);
+					*(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), m) = pnodet;
+				}
+				else
+				{
+					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
+					strDeleteArrayZ(par);
+					return FALSE;
+				}
 			}
-			else
+			strReverseArrayZ(par, &pnodet, sizeof(P_TNODE_BY));
+			switch(n)
 			{
-				stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
-				strDeleteArrayZ(par);
-				return FALSE;
-			}
-		}
-		strReverseArrayZ(par, &pnodet, sizeof(P_TNODE_BY));
-		switch(n)
-		{
-		case 1:
-			pnode->ppnode[LEFT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), LEFT);
-			break;
-		case 2:
-			memcpy(pnode->ppnode, par->pdata, sizeof(P_TNODE_BY) * 2);
-			break;
-		default:
-			pnode->ppnode[RIGHT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), 0);
-			for (pnodet = pnode, m = 0; m < n - 1; ++m)
-			{
-				pnodet->ppnode[RIGHT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), m + 1);
-				pnodet = pnodet->ppnode[RIGHT];
+			case 1:
+				pnode->ppnode[LEFT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), LEFT);
+				break;
+			case 2:
+				memcpy(pnode->ppnode, par->pdata, sizeof(P_TNODE_BY) * 2);
+				break;
+			default:
+				pnode->ppnode[RIGHT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), 0);
+				for (pnodet = pnode, m = 0; m < n - 1; ++m)
+				{
+					pnodet->ppnode[RIGHT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), m + 1);
+					pnodet = pnodet->ppnode[RIGHT];
 
+				}
+				break;
 			}
-			break;
+			stkPushL(pstkOperand, &pnode, sizeof(P_TNODE_BY));
+			strDeleteArrayZ(par);
 		}
-		stkPushL(pstkOperand, &pnode, sizeof(P_TNODE_BY));
-		strDeleteArrayZ(par);
+		else
+			stkPushL(pstkOperand, &pnode, sizeof(P_TNODE_BY));
 		return TRUE;
 	}
 	return FALSE;
@@ -297,11 +303,12 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 	P_STACK_L pstkOperator = NULL, pstkOperand = NULL;
 	ARRAY_Z arrbuf;
 	wchar_t * pbuf, prvc = **pwcstr;
+	TRM trm = { 0 };
 	
 	if (NULL == strInitArrayZ(&arrbuf, BUFSIZ, sizeof(wchar_t)))
 	{
 		if (NULL != err)
-			err(0x3, *pln, *pcol, 0);
+			err(0x3, *pln, *pcol, 0, 0, 0);
 		return NULL;
 	}
 	
@@ -346,7 +353,6 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 			if (L'\0' != *(wchar_t *)strLocateItemArrayZ(&arrbuf, sizeof(wchar_t), 0) && NULL != pt)
 			{
 				size_t * psiz;
-				TRM trm = { 0 };
 						
 				trm = *pt;
 				trm.x = *pln;
@@ -377,7 +383,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 						if (!(pt->adtp & AT_PREFIX))
 						{
 							if (NULL != err)
-								err(0x6, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
+								err(0x6, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata), 0, 0);
 							goto Lbl_Error;
 						}
 						trm = *pt;
@@ -395,7 +401,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
 								if (NULL != err)
-									err(0x1, *pln, *pcol, 0);
+									err(0x1, *pln, *pcol, 0, 0, 0);
 								goto Lbl_Error;
 							}
 						}
@@ -416,23 +422,11 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
 					break;
 				case TT_LPAR:
-					if (TT_RPAR == prvtp)
-					{
-						if (NULL != err)
-							err(0x2, *pln, *pcol, 0);
-						goto Lbl_Error;
-					}
 					trm.re = NULL;
 					pnode = strCreateNodeD(&trm, sizeof(TRM));
 					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
 					break;
 				case TT_RPAR:
-					if (TT_LPAR == prvtp)
-					{
-						if (NULL != err)
-							err(0x1, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
-						goto Lbl_Error;
-					}
 				HandleRPar:
 					if (!stkIsEmptyL(pstkOperator))
 					{
@@ -442,7 +436,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 							if (!Pop1Operator(pstkOperand, pstkOperator))
 							{
 								if (NULL != err)
-									err(0x1, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
+									err(0x1, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata), 0, 0);
 								goto Lbl_Error;
 							}
 						}
@@ -458,7 +452,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					if (stkIsEmptyL(pstkOperator))
 					{
 						if (NULL != err)
-							err(0x4, *pln, *pcol, 0);
+							err(0x4, *pln, *pcol, 0, 0, 0);
 						goto Lbl_Error;
 					}
 					stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
@@ -467,7 +461,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 					if (TT_OPERAND == prvtp)
 					{
 						if (NULL != err)
-							err(0x2, *pln, *pcol, 0);
+							err(0x2, *pln, *pcol, 0, 0, 0);
 						goto Lbl_Error;
 					}
 					psiz = NULL;
@@ -495,7 +489,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 						if (NULL == psiz)
 						{
 							if (NULL != err)
-								err(0x5, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
+								err(0x5, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata), 0, 0);
 							goto Lbl_Error;
 						}
 						if (0 != trm.type)
@@ -507,19 +501,19 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 				if (0 != trm.type)
 					prvtp = trm.type;
 			}
-
+			
 			pbuf = (wchar_t *)arrbuf.pdata;
 			il = 0;
 		}
 		else
 		{
 			++il;
-			if (pbuf - (wchar_t *)arrbuf.pdata >= strLevelArrayZ(&arrbuf))
+			if (pbuf - (wchar_t *)arrbuf.pdata >= (ptrdiff_t)strLevelArrayZ(&arrbuf))
 			{
 				if (NULL == strResizeArrayZ(&arrbuf, strLevelArrayZ(&arrbuf) + BUFSIZ, sizeof(wchar_t)))
 				{
 					if (NULL != err)
-						err(0x3, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata));
+						err(0x3, *pln, *pcol, wcslen((wchar_t *)arrbuf.pdata), 0, 0);
 					goto Lbl_Error;
 				}
 				pbuf = (wchar_t *)arrbuf.pdata + strLevelArrayZ(&arrbuf) - BUFSIZ;
@@ -543,27 +537,40 @@ Lbl_Finish:
 		case TT_LPAR:
 		case TT_RPAR:
 			if (NULL != err)
-				err(0x4, *pln, *pcol, 0);
+				err(0x4, *pln, *pcol, 0, 0, 0);
 			goto Lbl_Error;
+		default:
+			break;
 		}
 		if (!Pop1Operator(pstkOperand, pstkOperator))
 		{
 			if (NULL != err)
 			{
-				P_TRM pt = (P_TRM)pnode->pdata;
-				err(0x1, pt->x, pt->y, wcslen(pt->re));
+				pt = (P_TRM)pnode->pdata;
+				err(0x1, pt->x, pt->y, wcslen(pt->re), 0, 0);
 			
 			}
 			goto Lbl_Error;
 		}
 	}
+	
 	if (!stkIsEmptyL(pstkOperand))
+	{
 		stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperand);
+		
+		while (!stkIsEmptyL(pstkOperand))
+		{
+			P_TNODE_BY t;
+			stkPopL(&t, sizeof(P_TNODE_BY), pstkOperand);
+			t->ppnode[LEFT] = pnode;
+			pnode = t;
+		}
+	}
 
 	if (!stkIsEmptyL(pstkOperand) || !stkIsEmptyL(pstkOperator))
 	{
 		if (NULL != err)
-			err(0x1, *pln, *pcol, 0);
+			err(0x1, *pln, *pcol, 0, 0, 0);
 	}
 Lbl_Error:
 	do

@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1 calculator.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234C1025241546L00364
+ * File ID:     0926241234C1128241311L00372
  * License:     GPLv3.
  */
 #include <stdio.h>
@@ -174,7 +174,7 @@ TRM trm[] =
 	},
 };
 
-void pperror(size_t id, size_t ln, size_t col, size_t len)
+void pperror(size_t id, size_t ln, size_t col, size_t len, size_t curt, size_t nxtt)
 {
 	col -= 1 + len;
 	switch (id)
@@ -197,6 +197,8 @@ void pperror(size_t id, size_t ln, size_t col, size_t len)
 	case 0x6:
 		wprintf(L"Not a prefix operator! At line: %zd, column: %zd.\n", ln, col);
 		break;
+		break;
+
 	}
 }
 
@@ -210,7 +212,7 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 	size_t i, j;
 	double (*pfn[1])(double);
 	pfn[0] = sin;
-
+	
 	switch (pt->type)
 	{
 	case TT_OPERAND:
@@ -222,7 +224,7 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 				d = _pi;
 			else
 			{
-				pperror(0x5, pt->x, pt->y, wcslen(pt->re));
+				pperror(0x5, pt->x, pt->y, wcslen(pt->re), 0, 0);
 				return CBF_TERMINATE;
 			}
 		}
@@ -292,29 +294,34 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 				d = pfn[pt->calbk = 0](d1);
 				stkPushL(pstk, &d, sizeof(double));
 			}
+			if (!wcscmp(pt->re, L"int"))
+			{
+				stkPopL(&d1, sizeof(double), pstk);
+				d = (int)(d1);
+				stkPushL(pstk, &d, sizeof(double));
+			}
 		}
 		break;
 	case TT_IDENTIFIER:
-		pperror(0x5, pt->x, pt->y, wcslen(pt->re));
+		pperror(0x5, pt->x, pt->y, wcslen(pt->re), 0, 0);
 		return CBF_TERMINATE;
 	}
 	return CBF_CONTINUE;
 }
 
-double ComputeSyntaxTree(P_TNODE_BY pnode)
+void ComputeSyntaxTree(P_TNODE_BY pnode)
 {
 	P_STACK_L pstkNum = stkCreateL();
 
 	if (CBF_TERMINATE != treTraverseBYPost(pnode, cbftvsComputeSyntaxTree, (size_t)pstkNum))
 	{
 		double d;
-		stkPopL(&d, sizeof(double), pstkNum);
-		return d;
-
+		while (!stkIsEmptyL(pstkNum))
+			stkPopL(&d, sizeof(double), pstkNum);
+		wprintf(L"\n= %lf\n", d);
 	}
 
 	stkDeleteL(pstkNum);
-	return 0.0;
 }
 
 // #define WCSTR L"1 - - 1"
@@ -340,6 +347,7 @@ int main()
 	sp1RegisterID(ptafn, L"sin", 1);
 	sp1RegisterID(ptaid, L"pi", 0);
 	sp1RegisterID(ptaid, L"e", 0);
+	sp1RegisterID(ptafn, L"int", 0);
 	
 	//wscanf(L"%ls", buff);
 	fgets(mbb, BUFSIZ - 1, stdin);
@@ -350,14 +358,15 @@ int main()
 	{
 		sp1PrintSyntaxTree(pnode, 0);
 		wprintf(L"\n");
-		wprintf(L"\n= %lf\n", ComputeSyntaxTree(pnode));
+		ComputeSyntaxTree(pnode);
 
-		sp1DestroySyntaxTree(pnode);
+		(sp1DestroySyntaxTree)(pnode);
 	}
-
+	
 	sp1LexDestroy(pq);
 	treDeleteTrieA(ptafn, sizeof(wchar_t));
 	treDeleteTrieA(ptaid, sizeof(wchar_t));
 	
 	return 0;
 }
+

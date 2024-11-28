@@ -2,7 +2,7 @@
  * Name:        sp1.h
  * Description: Stack parser 1 header.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234A1017241348L00085
+ * File ID:     0926241234A1128241311L00086
  * License:     GPLv3.
  */
 #ifndef _SP1_H_
@@ -11,6 +11,7 @@
 #include "svstring.h"
 #include "svqueue.h"
 #include "svtree.h"
+#include "svset.h"
 #include "svregex.h"
 
 typedef enum st_TRMTYPE
@@ -37,7 +38,7 @@ typedef enum st_ADDTYPE
 } ADDTYPE;
 
 /* Error printing function prototype. */
-typedef void (*CBF_ERROR)(size_t id, size_t ln, size_t col, size_t len);
+typedef void (*CBF_ERROR)(size_t id, size_t ln, size_t col, size_t len, size_t curt, size_t nxtt);
 
 typedef struct st_TRM
 {
