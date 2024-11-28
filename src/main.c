@@ -151,7 +151,7 @@ TRM trm[] =
 		0
 	},
 	{
-		L" |\t",
+		L"( |\t)( |\t)*",
 		TT_SPACE,
 		AT_NONE,
 		-1,
