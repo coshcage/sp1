@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1128241311L00684
+ * File ID:     0926241234B1225240845L00671
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -193,6 +193,7 @@ static int cbftvsClearStack(void * pitem, size_t param)
 	P_TNODE_BY pnode = *(P_TNODE_BY *)((P_NODE_S)pitem)->pdata;
 	DWC4100(param);
 	treMorrisTraverseBYPre(pnode, cbftvsClearSyntaxTreeNode, 0);
+	treFreeBY(&pnode);
 	return CBF_CONTINUE;
 }
 
@@ -456,6 +457,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 						goto Lbl_Error;
 					}
 					stkPopL(&pnode, sizeof(P_TNODE_BY), pstkOperator);
+					sp1DestroySyntaxTree(pnode);
 					break;
 				case TT_IDENTIFIER:
 					if (TT_OPERAND == prvtp)
