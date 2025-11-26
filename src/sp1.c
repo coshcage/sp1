@@ -18,7 +18,7 @@ static int  cbftvsLexerDestroyPuppet(void * pitem, size_t param);
 static int  cbfcmpWChar_T(const void * px, const void * py);
 static int  cbftvsClearSyntaxTreeNode(void * pitem, size_t param);
 static int  cbftvsClearStack(void * pitem, size_t param);
-static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
+static bool Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
 static int  cbftvsResetLexer(void * pitem, size_t param);
 static void PrintTRM(P_TRM pt);
 int         _grpCBFCompareInteger(const void * px, const void * py);
@@ -203,9 +203,9 @@ static int cbftvsClearStack(void * pitem, size_t param)
  * Parameters:
  * pstkOperand Pointer to the operand stack.
  * pstkOperator Pointer to the operator stack.
- * Return value:  TRUE or FALSE.
+ * Return value:  true or false.
  */
-static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
+static bool Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
 {
 	if (!stkIsEmptyL(pstkOperator))
 	{
@@ -230,7 +230,7 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
 				{
 					stkPushL(pstkOperator, &pnode, sizeof(P_TNODE_BY));
 					strDeleteArrayZ(par);
-					return FALSE;
+					return false;
 				}
 			}
 			strReverseArrayZ(par, &pnodet, sizeof(P_TNODE_BY));
@@ -257,9 +257,9 @@ static BOOL Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
 		}
 		else
 			stkPushL(pstkOperand, &pnode, sizeof(P_TNODE_BY));
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 /* Attention:	  This Is An Internal Function. No Interface for Library Users.
@@ -650,9 +650,9 @@ void sp1PrintSyntaxTree(P_TNODE_BY pnode, size_t space)
  *       pta Pointer to a trie.
  *      name Name wide string.
  *         a Parameter counter.
- * Return value:  TRUE or FALSE.
+ * Return value:  true or false.
  */
-BOOL sp1RegisterID(P_TRIE_A pta, wchar_t * name, size_t a)
+bool sp1RegisterID(P_TRIE_A pta, wchar_t * name, size_t a)
 {
 	return treInsertTrieA(pta, name, wcslen(name), sizeof(wchar_t), a, cbfcmpWChar_T);
 }
@@ -662,9 +662,9 @@ BOOL sp1RegisterID(P_TRIE_A pta, wchar_t * name, size_t a)
  * Parameter:
  *       pta Pointer to a trie.
  *      name Name wide string.
- * Return value:  TRUE or FALSE.
+ * Return value:  true or false.
  */
-BOOL sp1UnregisterID(P_TRIE_A pta, wchar_t * name)
+bool sp1UnregisterID(P_TRIE_A pta, wchar_t * name)
 {
 	return treRemoveTrieA(pta, name, wcslen(name), sizeof(wchar_t), cbfcmpWChar_T);
 }
