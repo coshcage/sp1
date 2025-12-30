@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1225240845L00671
+ * File ID:     0926241234B1230250830L00672
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -314,6 +314,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 	}
 	
 	pbuf = (wchar_t *)arrbuf.pdata;
+	*pbuf = 0;
 		
 	pstkOperator = stkCreateL();
 	pstkOperand = stkCreateL();
