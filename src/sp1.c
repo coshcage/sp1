@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B1230250830L00672
+ * File ID:     0926241234B0806262110L00671
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -21,7 +21,6 @@ static int  cbftvsClearStack(void * pitem, size_t param);
 static bool Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator);
 static int  cbftvsResetLexer(void * pitem, size_t param);
 static void PrintTRM(P_TRM pt);
-int         _grpCBFCompareInteger(const void * px, const void * py);
 
 /* Function name: sp1LexCompile
  * Description:   Compile an array of TRMs to lex queue.
@@ -117,7 +116,7 @@ static int cbftvsLexerDestroyPuppet(void * pitem, size_t param)
 {
 	P_DFASEQ pdfaq = (P_DFASEQ)((P_NODE_S)pitem)->pdata;
 
-	DWC4100(param);
+	DISUSE(param);
 	if (pdfaq->pdfa)
 		DestroyDFA(pdfaq->pdfa);
 
@@ -161,7 +160,7 @@ static int cbfcmpWChar_T(const void * px, const void * py)
  */
 static int cbftvsClearSyntaxTreeNode(void * pitem, size_t param)
 {
-	DWC4100(param);
+	DISUSE(param);
 	if (NULL != ((P_TRM)P2P_TNODE_BY(pitem)->pdata)->re)
 		free(((P_TRM)P2P_TNODE_BY(pitem)->pdata)->re);
 	((P_TRM)P2P_TNODE_BY(pitem)->pdata)->re = NULL;
@@ -191,7 +190,7 @@ void sp1DestroySyntaxTree(P_TNODE_BY pnode)
 static int cbftvsClearStack(void * pitem, size_t param)
 {
 	P_TNODE_BY pnode = *(P_TNODE_BY *)((P_NODE_S)pitem)->pdata;
-	DWC4100(param);
+	DISUSE(param);
 	treMorrisTraverseBYPre(pnode, cbftvsClearSyntaxTreeNode, 0);
 	treFreeBY(&pnode);
 	return CBF_CONTINUE;
@@ -274,7 +273,7 @@ static int cbftvsResetLexer(void * pitem, size_t param)
 {
 	P_DFASEQ pdfaq = (P_DFASEQ)((P_NODE_S)pitem)->pdata;
 	
-	DWC4100(param);
+	DISUSE(param);
 	pdfaq->curstate = 0;
 	
 	return CBF_CONTINUE;

@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1 calculator.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234C1128241311L00372
+ * File ID:     0926241234C0806262113L00374
  * License:     GPLv3.
  */
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include "sp1.h"
 #include "svstack.h"
 
-const double _e = 2.718281828;
+const double _e  = 2.718281828;
 const double _pi = 3.141592654;
 
 TRM trm[] =
@@ -176,6 +176,7 @@ TRM trm[] =
 
 void pperror(size_t id, size_t ln, size_t col, size_t len, size_t curt, size_t nxtt)
 {
+	DISUSE(curt); DISUSE(nxtt);
 	col -= 1 + len;
 	switch (id)
 	{
@@ -198,7 +199,6 @@ void pperror(size_t id, size_t ln, size_t col, size_t len, size_t curt, size_t n
 		wprintf(L"Not a prefix operator! At line: %zd, column: %zd.\n", ln, col);
 		break;
 		break;
-
 	}
 }
 
@@ -305,6 +305,9 @@ int cbftvsComputeSyntaxTree(void * pitem, size_t param)
 	case TT_IDENTIFIER:
 		pperror(0x5, pt->x, pt->y, wcslen(pt->re), 0, 0);
 		return CBF_TERMINATE;
+	case TT_NONE:
+	default:
+		break;
 	}
 	return CBF_CONTINUE;
 }
@@ -349,7 +352,6 @@ int main()
 	sp1RegisterID(ptaid, L"e", 0);
 	sp1RegisterID(ptafn, L"int", 0);
 	
-	//wscanf(L"%ls", buff);
 	fgets(mbb, BUFSIZ - 1, stdin);
 	mbstowcs(buff, mbb, strlen(mbb));
 	
