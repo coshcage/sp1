@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1 calculator.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234C0806262113L00374
+ * File ID:     0926241234C1109260823L00373
  * License:     GPLv3.
  */
 #include <stdio.h>
@@ -181,23 +181,22 @@ void pperror(size_t id, size_t ln, size_t col, size_t len, size_t curt, size_t n
 	switch (id)
 	{
 	case 0x1:
-		wprintf(L"Miss operand! At line: %zd, column: %zd.\n", ln, col);
+		wprintf(L"Miss operand! At line: %zu, column: %zu.\n", ln, col);
 		break;
 	case 0x2:
-		wprintf(L"Miss operator! At line: %zd, column: %zd.\n", ln, col);
+		wprintf(L"Miss operator! At line: %zu, column: %zu.\n", ln, col);
 		break;
 	case 0x3:
-		wprintf(L"Allocation error! At line: %zd, column: %zd.\n", ln, col);
+		wprintf(L"Allocation error! At line: %zu, column: %zu.\n", ln, col);
 		break;
 	case 0x4:
-		wprintf(L"Miss parenthesis! At line: %zd, column: %zd.\n", ln, col);
+		wprintf(L"Miss parenthesis! At line: %zu, column: %zu.\n", ln, col);
 		break;
 	case 0x5:
-		wprintf(L"Undefined identifier! At line: %zd, column: %zd.\n", ln, col);
+		wprintf(L"Undefined identifier! At line: %zu, column: %zu.\n", ln, col);
 		break;
 	case 0x6:
-		wprintf(L"Not a prefix operator! At line: %zd, column: %zd.\n", ln, col);
-		break;
+		wprintf(L"Not a prefix operator! At line: %zu, column: %zu.\n", ln, col);
 		break;
 	}
 }
@@ -318,7 +317,7 @@ void ComputeSyntaxTree(P_TNODE_BY pnode)
 
 	if (CBF_TERMINATE != treTraverseBYPost(pnode, cbftvsComputeSyntaxTree, (size_t)pstkNum))
 	{
-		double d;
+		double d = 0.0;
 		while (!stkIsEmptyL(pstkNum))
 			stkPopL(&d, sizeof(double), pstkNum);
 		wprintf(L"\n= %lf\n", d);

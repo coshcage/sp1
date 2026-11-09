@@ -2,7 +2,7 @@
  * Name:        sp1.c
  * Description: Stack parser 1.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0926241234B0806262110L00671
+ * File ID:     0926241234B1109260820L00675
  * License:     GPLv3.
  */
 #include <wchar.h>
@@ -41,7 +41,7 @@ P_QUEUE_L sp1LexCompile(P_ARRAY_Z parrlex)
 			DFASEQ dq = { 0 };
 			pt = (P_TRM)strLocateItemArrayZ(parrlex, sizeof(TRM), i);
 			dq.num = i + 1;
-			if (L'0' == *pt->re)
+			if (L'\0' == *pt->re)
 			{
 				dq.pdfa = NULL;
 			}
@@ -73,15 +73,18 @@ static int cbftvsLexerPuppet(void * pitem, size_t param)
 
 	if (0 == pdfaq->curstate)
 		pdfaq->curstate = 1;
-
-	pdfaq->curstate = NextState(pdfaq->pdfa, pdfaq->curstate, (wchar_t)0[(size_t *)param]);
-	strGetValueMatrix(&i, pdfaq->pdfa, pdfaq->curstate, 0, sizeof(size_t));
-	if (i & SIGN)
+	
+	if (NULL != pdfaq->pdfa)
 	{
-		1[(size_t *)param] = pdfaq->num;
-		pdfaq->curstate = 1;
+		pdfaq->curstate = NextState(pdfaq->pdfa, pdfaq->curstate, (wchar_t)0[(size_t *)param]);
+		strGetValueMatrix(&i, pdfaq->pdfa, pdfaq->curstate, 0, sizeof(size_t));
+		if (i & SIGN)
+		{
+			1[(size_t *)param] = pdfaq->num;
+			pdfaq->curstate = 1;
+		}
 	}
-
+	
 	return CBF_CONTINUE;
 }
 
@@ -117,7 +120,7 @@ static int cbftvsLexerDestroyPuppet(void * pitem, size_t param)
 	P_DFASEQ pdfaq = (P_DFASEQ)((P_NODE_S)pitem)->pdata;
 
 	DISUSE(param);
-	if (pdfaq->pdfa)
+	if (NULL != pdfaq->pdfa)
 		DestroyDFA(pdfaq->pdfa);
 
 	return CBF_CONTINUE;
@@ -232,14 +235,17 @@ static bool Pop1Operator(P_STACK_L pstkOperand, P_STACK_L pstkOperator)
 					return false;
 				}
 			}
-			strReverseArrayZ(par, &pnodet, sizeof(P_TNODE_BY));
+			
+			if (strLevelArrayZ(par) > 1)
+				strReverseArrayZ(par, &pnodet, sizeof(P_TNODE_BY));
+			
 			switch(n)
 			{
 			case 1:
 				pnode->ppnode[LEFT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), LEFT);
 				break;
 			case 2:
-				memcpy(pnode->ppnode, par->pdata, sizeof(P_TNODE_BY) * 2);
+				memcpy((P_TNODE_BY *)pnode->ppnode, (P_TNODE_BY *)par->pdata, sizeof(P_TNODE_BY) * 2);
 				break;
 			default:
 				pnode->ppnode[RIGHT] = *(P_TNODE_BY *)strLocateItemArrayZ(par, sizeof(P_TNODE_BY), 0);
@@ -474,9 +480,7 @@ P_TNODE_BY sp1ParseExpression(P_QUEUE_L pq, P_ARRAY_Z parrlex, P_TRIE_A ptafn, P
 						{
 							trm.pc = *psiz;
 							trm.level = SP1C_FN_LEVEL;
-							trm.type = TT_OPERATOR;
-							if (0 != trm.type)
-								prvtp = trm.type;
+							prvtp = trm.type = TT_OPERATOR;
 							goto HandleOperator;
 						}
 						else
@@ -614,7 +618,7 @@ Lbl_Error:
  */
 static void PrintTRM(P_TRM pt)
 {
-	wprintf(L"%ls(%ld,%ld)", pt->re, pt->type, pt->adtp);
+	wprintf(L"%ls(%d,%d)", pt->re, pt->type, pt->adtp);
 }
 
 /* Function name: sp1PrintSyntaxTree
